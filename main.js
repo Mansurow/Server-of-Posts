@@ -5,20 +5,32 @@ const http = require('http');
 const statusNotFound = 404;
 const statusBadRequest = 400;
 const statusOk = 200;
-
 let nextId = 1;
 const posts = [];
 
+function sendResponse(response,{status = statusOk, headers = {}, body = null}) {
+    Object.entries(headers).forEach(([key,value]) => response.setHeader(key,value));
+
+    response.writeHead(status);
+    response.end(body);   
+}
+function sendJSON(response,body) {
+    sendResponse(response, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+}
+
 const methods = new Map();
 methods.set('/posts.get',function({response}){
-    response.writeHead(statusOk, {'Content-Type': 'application/json'});
-    response.end(JSON.stringify(posts));
+    sendJSON(response, posts);
 });
 methods.set('/posts.getById',function(){});
 methods.set('/posts.post',function({response, searchParams}){
     if(!searchParams.has('content')){
-        response.writeHead(statusBadRequest);
-        response.end();
+        sendResponse(response,{status: statusBadRequest});
         return;
     }
     const content = searchParams.get('content');
@@ -29,8 +41,7 @@ methods.set('/posts.post',function({response, searchParams}){
         created: Date.now(),
     };
     posts.unshift(post);
-    response.writeHead(statusOk,{'Content-Type': 'application/json'});
-    response.end(JSON.stringify(post));
+    sendJSON(response, posts);
 });
 methods.set('/posts.edit',function(){});
 methods.set('/posts.delete',function(){});
@@ -40,8 +51,7 @@ const server = http.createServer(function(request, response){
 
     const method = methods.get(pathname);
     if (method === undefined){
-        response.writeHead(statusNotFound);
-        response.end();
+        sendResponse(response,{status: statusNotFound});
         return;
     }
 
