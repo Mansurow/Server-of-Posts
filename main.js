@@ -27,12 +27,30 @@ const methods = new Map();
 methods.set('/posts.get',function({response}){
     sendJSON(response, posts);
 });
-methods.set('/posts.getById',function(){});
+methods.set('/posts.getById',function({response, searchParams}){
+    if(!searchParams.has('id') || !Number(searchParams.get('id'))){
+        sendResponse(response,{status: statusBadRequest});
+        return;
+    }
+
+    const id = Number(searchParams.get('id'));
+
+    posts.filter(post => {
+        if (post.id = id){
+            sendJSON(response, posts[id - 1]);
+        } else {
+            sendResponse(response,{status: statusNotFound});
+            return;
+        }
+    });
+});
 methods.set('/posts.post',function({response, searchParams}){
     if(!searchParams.has('content')){
         sendResponse(response,{status: statusBadRequest});
         return;
     }
+
+
     const content = searchParams.get('content');
 
     const post = {
@@ -41,7 +59,7 @@ methods.set('/posts.post',function({response, searchParams}){
         created: Date.now(),
     };
     posts.unshift(post);
-    sendJSON(response, posts);
+    sendJSON(response, post);
 });
 methods.set('/posts.edit',function(){});
 methods.set('/posts.delete',function(){});
