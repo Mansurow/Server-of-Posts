@@ -84,7 +84,20 @@ methods.set('/posts.edit',function({response, searchParams}){
         return;
     }
 });
-methods.set('/posts.delete',function(){});
+methods.set('/posts.delete',function({response, searchParams}){
+    if (!searchParams.has('id') || !Number(searchParams.get('id'))){
+        sendResponse(response,{status: statusBadRequest});
+        return;
+    }
+    const id = Number(searchParams.get('id'));
+    const getIndexPost = Number(posts.findIndex(post => post.id === Number(id)));
+    if (getIndexPost !== -1){
+        sendJSON(response, posts[getIndexPost]);
+        posts.splice(getIndexPost,1);
+    } else {
+        sendResponse(response,{status: statusNotFound});
+    }
+});
 
 const server = http.createServer(function(request, response){
     const {pathname, searchParams} = new URL(request.url, `http://${request.headers.host}`);
