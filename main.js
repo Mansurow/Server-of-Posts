@@ -52,9 +52,7 @@ methods.set('/posts.post',function({response, searchParams}){
         return;
     }
 
-
     const content = searchParams.get('content');
-
     const post = {
         id: nextId++,
         content: content,
@@ -63,7 +61,29 @@ methods.set('/posts.post',function({response, searchParams}){
     posts.unshift(post);
     sendJSON(response, post);
 });
-methods.set('/posts.edit',function(){});
+methods.set('/posts.edit',function({response, searchParams}){
+    if (!searchParams.has('id') || !Number(searchParams.get('id'))){
+        sendResponse(response,{status: statusBadRequest});
+        return;
+    }
+    if (!searchParams.has('content')){
+        sendResponse(response,{status: statusBadRequest});
+        return;
+    }
+    const id = Number(searchParams.get('id'));
+    const updateContent = searchParams.get('content');
+    posts.filter(post => { 
+        if (post.id === id){
+            post.content = updateContent;
+            sendJSON(response, post);
+        }
+    });
+    const postFound = posts.filter(post => post.id === id);
+    if (postFound.length === 0){
+        sendResponse(response,{status: statusNotFound});
+        return;
+    }
+});
 methods.set('/posts.delete',function(){});
 
 const server = http.createServer(function(request, response){
