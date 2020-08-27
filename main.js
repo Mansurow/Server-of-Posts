@@ -25,7 +25,8 @@ function sendJSON(response,body) {
 
 const methods = new Map();
 methods.set('/posts.get',function({response}){
-    sendJSON(response, posts);
+    const removedPost = posts.filter(post => post.removed === false);
+    sendJSON(response, removedPost);
 });
 methods.set('/posts.getById',function({response, searchParams}){
     if (!searchParams.has('id') || !Number(searchParams.get('id'))){
@@ -37,8 +38,12 @@ methods.set('/posts.getById',function({response, searchParams}){
     
     posts.filter(post => { 
         if (post.id === id){
+            if (post.removed === true){
+                sendResponse(response,{status: statusNotFound});
+                return;
+            }
             sendJSON(response, post);
-        }
+        }    
     });
     const postFound = posts.filter(post => post.id === id);
     if (postFound.length === 0){
@@ -57,6 +62,7 @@ methods.set('/posts.post',function({response, searchParams}){
         id: nextId++,
         content: content,
         created: Date.now(),
+        removed: false,
     };
     posts.unshift(post);
     sendJSON(response, post);
@@ -74,6 +80,10 @@ methods.set('/posts.edit',function({response, searchParams}){
     const updateContent = searchParams.get('content');
     posts.filter(post => { 
         if (post.id === id){
+            if (post.removed === true){
+                sendResponse(response,{status: statusNotFound});
+                return;
+            }
             post.content = updateContent;
             sendJSON(response, post);
         }
@@ -92,8 +102,12 @@ methods.set('/posts.delete',function({response, searchParams}){
     const id = Number(searchParams.get('id'));
     const getIndexPost = Number(posts.findIndex(post => post.id === Number(id)));
     if (getIndexPost !== -1){
+        if (posts[getIndexPost].removed === true){
+            sendResponse(response,{status: statusNotFound});
+            return;
+        }
+        posts[getIndexPost].removed = true;
         sendJSON(response, posts[getIndexPost]);
-        posts.splice(getIndexPost,1);
     } else {
         sendResponse(response,{status: statusNotFound});
     }
