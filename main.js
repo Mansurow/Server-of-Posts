@@ -112,7 +112,24 @@ methods.set('/posts.delete',function({response, searchParams}){
         sendResponse(response,{status: statusNotFound});
     }
 });
-
+methods.set('/posts.restore',function({response, searchParams}){
+    if (!searchParams.has('id') || !Number(searchParams.get('id'))){
+        sendResponse(response,{status: statusBadRequest});
+        return;
+    }
+    const id = Number(searchParams.get('id'));
+    const getIndexPost = Number(posts.findIndex(post => post.id === Number(id)));
+    if (getIndexPost !== -1){
+        if (posts[getIndexPost].removed === false){
+            sendResponse(response,{status: statusBadRequest});
+            return;
+        }
+        posts[getIndexPost].removed = false;
+        sendJSON(response, posts[getIndexPost]);
+    } else {
+        sendResponse(response,{status: statusNotFound});
+    }
+});
 const server = http.createServer(function(request, response){
     const {pathname, searchParams} = new URL(request.url, `http://${request.headers.host}`);
 
