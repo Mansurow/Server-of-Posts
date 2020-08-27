@@ -19,7 +19,7 @@ The server works with URL requests:
 
    Сервер работает с URL запросами:
    -если вы хотите создать пост, вам нужно ввести URL-адрес
-      http://localhost:9999/posts.post?содержание=first (не надо "first")
+      http://localhost:9999/posts.post?содержание=first (не обязательно "first")
    -если вы хотите получить все пост, вам нужно ввести URL-адрес
       http://localhost:9999/posts.get
    -если вы хотите отредактировать пост, вам нужно ввести URL-адрес
