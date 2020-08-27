@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const http = require('http');
 
@@ -28,24 +28,26 @@ methods.set('/posts.get',function({response}){
     sendJSON(response, posts);
 });
 methods.set('/posts.getById',function({response, searchParams}){
-    if(!searchParams.has('id') || !Number(searchParams.get('id'))){
+    if (!searchParams.has('id') || !Number(searchParams.get('id'))){
         sendResponse(response,{status: statusBadRequest});
         return;
     }
 
     const id = Number(searchParams.get('id'));
-
-    posts.filter(post => {
-        if (post.id = id){
-            sendJSON(response, posts[id - 1]);
-        } else {
-            sendResponse(response,{status: statusNotFound});
-            return;
+    
+    posts.filter(post => { 
+        if (post.id === id){
+            sendJSON(response, post);
         }
     });
+    const postFound = posts.filter(post => post.id === id);
+    if (postFound.length === 0){
+        sendResponse(response,{status: statusNotFound});
+        return;
+    }
 });
 methods.set('/posts.post',function({response, searchParams}){
-    if(!searchParams.has('content')){
+    if (!searchParams.has('content')){
         sendResponse(response,{status: statusBadRequest});
         return;
     }
@@ -78,7 +80,7 @@ const server = http.createServer(function(request, response){
         response,
         pathname,
         searchParams,
-    }
+    };
 
     method(params);
 });
