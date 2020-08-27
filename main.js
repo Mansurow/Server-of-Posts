@@ -14,6 +14,7 @@ function sendResponse(response,{status = statusOk, headers = {}, body = null}) {
     response.writeHead(status);
     response.end(body);   
 }
+
 function sendJSON(response,body) {
     sendResponse(response, {
         headers: {
@@ -22,12 +23,13 @@ function sendJSON(response,body) {
         body: JSON.stringify(body),
     });
 }
-
 const methods = new Map();
+
 methods.set('/posts.get',function({response}){
     const removedPost = posts.filter(post => post.removed === false);
     sendJSON(response, removedPost);
 });
+
 methods.set('/posts.getById',function({response, searchParams}){
     if (!searchParams.has('id') || !Number(searchParams.get('id'))){
         sendResponse(response,{status: statusBadRequest});
@@ -51,6 +53,7 @@ methods.set('/posts.getById',function({response, searchParams}){
         return;
     }
 });
+
 methods.set('/posts.post',function({response, searchParams}){
     if (!searchParams.has('content')){
         sendResponse(response,{status: statusBadRequest});
@@ -67,6 +70,7 @@ methods.set('/posts.post',function({response, searchParams}){
     posts.unshift(post);
     sendJSON(response, post);
 });
+
 methods.set('/posts.edit',function({response, searchParams}){
     if (!searchParams.has('id') || !Number(searchParams.get('id'))){
         sendResponse(response,{status: statusBadRequest});
@@ -94,6 +98,7 @@ methods.set('/posts.edit',function({response, searchParams}){
         return;
     }
 });
+
 methods.set('/posts.delete',function({response, searchParams}){
     if (!searchParams.has('id') || !Number(searchParams.get('id'))){
         sendResponse(response,{status: statusBadRequest});
@@ -112,6 +117,7 @@ methods.set('/posts.delete',function({response, searchParams}){
         sendResponse(response,{status: statusNotFound});
     }
 });
+
 methods.set('/posts.restore',function({response, searchParams}){
     if (!searchParams.has('id') || !Number(searchParams.get('id'))){
         sendResponse(response,{status: statusBadRequest});
@@ -130,22 +136,21 @@ methods.set('/posts.restore',function({response, searchParams}){
         sendResponse(response,{status: statusNotFound});
     }
 });
+
 const server = http.createServer(function(request, response){
     const {pathname, searchParams} = new URL(request.url, `http://${request.headers.host}`);
-
     const method = methods.get(pathname);
+
     if (method === undefined){
         sendResponse(response,{status: statusNotFound});
         return;
     }
-
     const params = {
         request,
         response,
         pathname,
         searchParams,
     };
-
     method(params);
 });
 
